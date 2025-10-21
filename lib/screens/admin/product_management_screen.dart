@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../services/product_service.dart';
 import '../../models/product_model.dart';
-import '../../services/auth_service.dart';
 import 'product_form_screen.dart';
 
 class ProductManagementScreen extends StatelessWidget {
@@ -11,7 +9,7 @@ class ProductManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final productService = ProductService();
-    final auth = Provider.of<AuthService>(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Quản lý sản phẩm')),
       body: StreamBuilder<List<Product>>(
@@ -57,12 +55,19 @@ class ProductManagementScreen extends StatelessWidget {
                         ),
                       );
                       if (confirmed == true) {
-                        await productService.deleteProduct(p.id, imageUrl: p.imageUrl);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã xóa sản phẩm')));
+                        try {
+                          await productService.deleteProduct(p.id, imageUrl: p.imageUrl);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã xóa sản phẩm')));
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi khi xóa: $e')));
+                          }
+                        }
                       }
                     },
                   ),
-
                 ]),
               );
             },

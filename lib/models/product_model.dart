@@ -1,4 +1,3 @@
-// Product model
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Product {
@@ -9,6 +8,7 @@ class Product {
   final String? imageUrl;
   final bool visible;
   final Timestamp createdAt;
+  final Timestamp? updatedAt;
 
   Product({
     required this.id,
@@ -18,6 +18,7 @@ class Product {
     this.imageUrl,
     required this.visible,
     required this.createdAt,
+    this.updatedAt,
   });
 
   factory Product.fromDoc(DocumentSnapshot doc) {
@@ -30,6 +31,7 @@ class Product {
       imageUrl: data['imageUrl'],
       visible: data['visible'] ?? true,
       createdAt: data['createdAt'] ?? Timestamp.now(),
+      updatedAt: data['updatedAt'],
     );
   }
 
@@ -41,6 +43,7 @@ class Product {
       'imageUrl': imageUrl,
       'visible': visible,
       'createdAt': createdAt,
+      'updatedAt': updatedAt,
     };
   }
 }

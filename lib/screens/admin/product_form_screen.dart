@@ -26,6 +26,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   final ProductService _productService = ProductService();
   final StorageService _storageService = StorageService();
   final ImagePicker _picker = ImagePicker();
+  final _uuid = const Uuid();
 
   @override
   void initState() {
@@ -36,6 +37,14 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       _priceCtrl.text = widget.product!.price.toString();
       _visible = widget.product!.visible;
     }
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _descCtrl.dispose();
+    _priceCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _pickImage() async {
@@ -53,11 +62,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
     try {
       String? imageUrl = widget.product?.imageUrl;
-
-      // Nếu chọn ảnh mới, upload ảnh mới
+      // nếu pick ảnh mới -> upload
       if (_pickedImage != null) {
-        final filename = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-        imageUrl = await _storageService.uploadProductImage(_pickedImage!, filename: filename);
+        final filename = '${_uuid.v4()}.jpg';
+        imageUrl = await _storage_service_upload(_pickedImage!, filename);
       }
 
       final data = {
@@ -70,20 +78,23 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
       if (widget.product == null) {
         await _productService.addProduct(data);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã thêm sản phẩm')));
+        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã thêm sản phẩm')));
       } else {
         await _productService.updateProduct(widget.product!.id, data, oldImageUrl: widget.product!.imageUrl);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã cập nhật sản phẩm')));
+        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã cập nhật sản phẩm')));
       }
-
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
     } finally {
       setState(() => _loading = false);
     }
   }
 
+  // wrapper to handle upload + small delay if needed
+  Future<String> _storage_service_upload(File file, String filename) async {
+    return await _storageService.uploadProductImage(file, filename: filename);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,11 +109,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             child: Column(children: [
               GestureDetector(
                 onTap: _pickImage,
-                child: _pickedImage != null ?
-                Image.file(_pickedImage!, width: double.infinity, height: 180, fit: BoxFit.cover) :
-                (widget.product?.imageUrl != null ?
-                Image.network(widget.product!.imageUrl!, width: double.infinity, height: 180, fit: BoxFit.cover) :
-                Container(width: double.infinity, height: 180, color: Colors.grey[200], child: const Icon(Icons.add_a_photo, size: 48))),
+                child: _pickedImage != null
+                    ? Image.file(_pickedImage!, width: double.infinity, height: 180, fit: BoxFit.cover)
+                    : (widget.product?.imageUrl != null && widget.product!.imageUrl!.isNotEmpty
+                    ? Image.network(widget.product!.imageUrl!, width: double.infinity, height: 180, fit: BoxFit.cover)
+                    : Container(width: double.infinity, height: 180, color: Colors.grey[200], child: const Icon(Icons.add_a_photo, size: 48))),
               ),
               const SizedBox(height: 12),
               TextFormField(controller: _nameCtrl, decoration: const InputDecoration(labelText: 'Tên sản phẩm'), validator: (v) => v == null || v.isEmpty ? 'Nhập tên' : null),
