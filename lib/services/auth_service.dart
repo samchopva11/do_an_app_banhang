@@ -55,7 +55,7 @@ class AuthService extends ChangeNotifier {
   }
 
   // Đăng xuất
-  Future<void> logout() async {
+  Future<void> signOut() async {
     await _auth.signOut();
   }
 

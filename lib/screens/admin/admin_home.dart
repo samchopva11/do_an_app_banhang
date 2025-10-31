@@ -18,7 +18,7 @@ class AdminHome extends StatelessWidget {
             ListTile(title: const Text('Quản lý sản phẩm'), onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductManagementScreen()));
             }),
-            ListTile(title: const Text('Đăng xuất'), onTap: () async { await auth.logout(); Navigator.pushReplacementNamed(context, '/login'); }),
+            ListTile(title: const Text('Đăng xuất'), onTap: () async { await auth.signOut(); Navigator.pushReplacementNamed(context, '/login'); }),
           ],
         ),
       ),

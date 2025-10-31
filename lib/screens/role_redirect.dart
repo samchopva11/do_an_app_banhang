@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import 'admin/admin_home.dart';
 import 'user/home_screen.dart';
 import 'login_screen.dart';
+import 'user/product_list_screen.dart';
 
 class RoleRedirect extends StatelessWidget {
   const RoleRedirect({super.key});
@@ -40,7 +41,7 @@ class RoleRedirect extends StatelessWidget {
           return const UserHome();
         }
         final role = data['role'] ?? 'user';
-        return role == 'admin' ? const AdminHome() : const UserHome();
+        return role == 'admin' ? const AdminHome() : const ProductListScreen();
       },
     );
   }
